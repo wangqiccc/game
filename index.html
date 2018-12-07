@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title></title>
+	<style type="text/css">
+		*{
+			margin:0;
+			padding:0;
+			list-style: none;
+			box-sizing:border-box;
+		}
+		html,body{
+			width:100%;
+			height:100%;
+			overflow: hidden; 
+		}
+		.main{
+      width:800px;
+      height:100%;
+      border:1px solid red;
+      margin:0 auto;   
+		}
+		.scene{
+			width:600px;
+			height:100%;
+			float:left;
+			background:#ccc;
+			position: relative;
+		}
+		.control{
+			width:198px;
+			height:100%;
+			background:#000;
+			float:left;
+			color:#fff;
+		}
+		.control li{
+			height:50px;
+			line-height: 50px;
+      font-size: 32px;
+		}
+    input{
+      font-size: 32px;
+    }
+		.letter{
+			width:60px;
+			height:60px;
+			border:1px solid red;
+			border-radius: 50%;
+			position: absolute;
+			font-size:30px;
+			text-align: center;
+			line-height: 60px;
+			font-weight: bold;
+		}
+	</style>
+</head>
+<body>
+  <div class="main">
+  	 <div class="scene"></div>
+  	 <div class="control">
+  	 	<ul>
+  	 		<li>得分：<span class="scor">0</span> </li>
+  	 		<li>生命：<span class="life">5</span></li>
+        <li>记录：<span class="max">0</span></li>
+  	 	</ul>
+  	 	<ul>
+  	 		<li><input type="button" value="开始" class="start"></li>
+        <li><input type="button" value="重新开始" class="restart"></li>
+  	 	</ul>
+  	 </div>
+  </div>
+  <script type="text/javascript">
+  	var start=document.querySelector(".start");
+    var restart=document.querySelector(".restart");
+  	var scene=document.querySelector(".scene");
+    var scor=document.querySelector(".scor");
+    var scorNum=0;
+    var life=document.querySelector(".life");
+    var lifeNum=5;
+  	var flag=true;
+    var speed=5;
+  	var obj=new Object();//{}
+    var max=document.querySelector(".max");
+    max.innerHTML=localStorage.max||0;
+  	function create(){
+  	  var letter=document.createElement("div");
+  	  do{
+  	  var rNum=Math.floor(Math.random()*26+65);
+  	  var rLetter=String.fromCharCode(rNum);
+  	  }while(obj[rLetter]);
+  	  letter.innerHTML=rLetter;
+  	  letter.className="letter";
+      do{
+  	  var rLeft=Math.random()*540;
+  	  var rTop=-Math.random()*200;
+  	  }while(check(rLeft));
+  	  obj[rLetter]={l:rLeft,t:rTop,el:letter};
+  	  letter.style.left=rLeft+"px";
+  	  letter.style.top=rTop+"px";
+  	  scene.appendChild(letter);
+  	}  
+  	function check(l){
+       for(var i in obj){
+       	  if(l>obj[i].l-60&&l<obj[i].l+60){
+                return true;
+       	  }
+       }
+  	}
+    start.onclick=s;
+    function s(){
+    	if(flag){
+    		flag=false;
+    	 for(var i=0;i<3;i++){
+    		create();
+    	 }
+    	 move();
+        }
+    }
+    function move(){
+      var st=setInterval(function(){	
+    	for(var i in obj){
+            var t=obj[i].t;
+            t+=speed;
+            obj[i].t=t;
+            obj[i].el.style.top=t+"px";
+            if(t>window.innerHeight){
+               scene.removeChild(obj[i].el);
+               delete obj[i];
+               create();
+               lifeNum--;
+               life.innerHTML=lifeNum;
+               if(lifeNum===0){
+                 clearInterval(st);    
+                 alert("游戏失败");
+                 let max=localStorage.max||0;
+                 if(scorNum>max){
+                    alert("新记录");
+                    localStorage.max=scorNum;
+                    max.innerHTML=localStorage.max||0;
+                 }
+               } 
+            }
+    	}
+      },50)
+    }
+    document.onkeydown=function(e){
+      var code=e.keyCode;
+      if(code===13){
+        s();
+      }
+      var l=String.fromCharCode(code);
+      if(obj[l]){
+      	  scene.removeChild(obj[l].el);
+      	  delete obj[l];
+      	  create();
+          scorNum++;
+          scor.innerHTML=scorNum;
+          if(scorNum%10===0&&scorNum<=30){
+             create();
+          }
+          if(scorNum%10===0&&scorNum>30){
+             speed++;  
+          }
+      }  
+    }
+    restart.onclick=function(){
+      location.reload();
+    }
+  </script>	
+</body>
+</html>
